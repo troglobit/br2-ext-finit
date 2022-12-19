@@ -1,0 +1,9 @@
+menu "Target packages"
+
+menu "System tools"
+	source "$BR2_EXTERNAL_FINIT_PATH/package/finit/Config.in"
+	source "$BR2_EXTERNAL_FINIT_PATH/package/finit-plugins/Config.in"
+	source "$BR2_EXTERNAL_FINIT_PATH/package/skeleton-init-finit/Config.in"
+endmenu
+
+endmenu
