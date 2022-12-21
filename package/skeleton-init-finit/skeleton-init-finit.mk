@@ -65,6 +65,13 @@ endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_MINI_SNMPD
 endif
 
+ifeq ($(BR2_PACKAGE_RNG_TOOLS),y)
+define SKELETON_INIT_FINIT_SET_RNGD
+	ln -sf ../available/rngd.conf $(FINIT_D)/enabled/rngd.conf
+endef
+SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_RNGD
+endif
+
 # Enable Busybox syslogd unless sysklogd is enabled
 ifeq ($(BR2_PACKAGE_SYSKLOGD),y)
 define SKELETON_INIT_FINIT_SET_SYSLOGD
