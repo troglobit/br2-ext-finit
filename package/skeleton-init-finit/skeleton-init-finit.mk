@@ -4,10 +4,8 @@
 #
 ################################################################################
 
-# The skeleton can't depend on the toolchain, since all packages depends on the
-# skeleton and the toolchain is a target package, as is skeleton.
-# Hence, skeleton would depends on the toolchain and the toolchain would depend
-# on skeleton.
+SKELETON_INIT_FINIT_VERSION = 0.1
+SKELETON_INIT_FINIT_SITE = $(call github,troglobit,finit-skel,v$(SKELETON_INIT_FINIT_VERSION))
 SKELETON_INIT_FINIT_ADD_TOOLCHAIN_DEPENDENCY = NO
 SKELETON_INIT_FINIT_ADD_SKELETON_DEPENDENCY = NO
 SKELETON_INIT_FINIT_TMPFILE := $(shell mktemp)
@@ -146,11 +144,7 @@ endef
 endif
 
 define SKELETON_INIT_FINIT_INSTALL_TARGET_CMDS
-	$(call SYSTEM_RSYNC,$(SKELETON_INIT_FINIT_PKGDIR)/skeleton,$(TARGET_DIR))
-	mkdir -p $(TARGET_DIR)/home
-	mkdir -p $(TARGET_DIR)/srv
-	mkdir -p $(TARGET_DIR)/var
-	[ -L $(TARGET_DIR)/var/run ] || ln -s ../run $(TARGET_DIR)/var/run
+	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(@D) install
 	$(SKELETON_INIT_FINIT_ROOT_RO_OR_RW)
 	$(SKELETON_INIT_FINIT_TELNETD)
 endef
