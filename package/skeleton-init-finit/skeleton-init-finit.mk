@@ -133,20 +133,9 @@ define SKELETON_INIT_FINIT_ROOT_RO_OR_RW
 endef
 endif
 
-ifeq ($(BR2_PACKAGE_SKELETON_INIT_FINIT_TELNETD),y)
-define SKELETON_INIT_FINIT_TELNETD
-	$(SED) '\:^#[[:blank:]]*telnet[[:blank:]]:s/^# //' $(TARGET_DIR)/etc/inetd.conf
-endef
-else
-define SKELETON_INIT_FINIT_TELNETD
-	$(SED) '\:^telnet[[:blank:]]:s/^/# /' $(TARGET_DIR)/etc/inetd.conf
-endef
-endif
-
 define SKELETON_INIT_FINIT_INSTALL_TARGET_CMDS
 	$(MAKE) DESTDIR=$(TARGET_DIR) -C $(@D) install
 	$(SKELETON_INIT_FINIT_ROOT_RO_OR_RW)
-	$(SKELETON_INIT_FINIT_TELNETD)
 endef
 
 $(eval $(generic-package))
