@@ -26,19 +26,33 @@ define SKELETON_INIT_FINIT_GETTY
 	fi
 endef
 
+#
+# Helpers
+#
+define finit_enable
+	ln -sf ../available/$(1).conf $(FINIT_D)/enabled/$(1).conf
+endef
+
+define finit_disable
+	rm -f $(FINIT_D)/enabled/$(1).conf
+endef
+
+#
+# Finit services to enable by default if selected in Buildroot Menuconfig
+#
 define SKELETON_INIT_FINIT_SET_GENERIC_GETTY
 	$(SKELETON_INIT_FINIT_GETTY) > $(SKELETON_INIT_FINIT_TMPFILE)
 	grep -qxF "`cat $(SKELETON_INIT_FINIT_TMPFILE)`" $(FINIT_D)/available/getty.conf \
 		|| cat $(SKELETON_INIT_FINIT_TMPFILE) >> $(FINIT_D)/available/getty.conf
 	rm $(SKELETON_INIT_FINIT_TMPFILE)
-	ln -sf ../available/getty.conf $(FINIT_D)/enabled/getty.conf
+	$(finit_enable getty)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_GENERIC_GETTY
 
 # Dropbear SSH
 ifeq ($(BR2_PACKAGE_DROPBEAR),y)
 define SKELETON_INIT_FINIT_SET_DROPBEAR
-	ln -sf ../available/dropbear.conf $(FINIT_D)/enabled/dropbear.conf
+	$(finit_enable dropbear)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_DROPBEAR
 endif
@@ -46,28 +60,28 @@ endif
 # OpenSSH
 ifeq ($(BR2_PACKAGE_OPENSSH),y)
 define SKELETON_INIT_FINIT_SET_OPENSSH
-	ln -sf ../available/sshd.conf $(FINIT_D)/enabled/sshd.conf
+	$(finit_enable sshd)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_OPENSSH
 endif
 
 ifeq ($(BR2_PACKAGE_LLDPD),y)
 define SKELETON_INIT_FINIT_SET_LLDPD
-	ln -sf ../available/lldpd.conf $(FINIT_D)/enabled/lldpd.conf
+	$(finit_enable lldpd)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_LLDPD
 endif
 
 ifeq ($(BR2_PACKAGE_MINI_SNMPD),y)
 define SKELETON_INIT_FINIT_SET_MINI_SNMPD
-	ln -sf ../available/mini-snmpd.conf $(FINIT_D)/enabled/mini-snmpd.conf
+	$(finit_enable mini-snmpd)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_MINI_SNMPD
 endif
 
 ifeq ($(BR2_PACKAGE_RNG_TOOLS),y)
 define SKELETON_INIT_FINIT_SET_RNGD
-	ln -sf ../available/rngd.conf $(FINIT_D)/enabled/rngd.conf
+	$(finit_enable rngd)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_RNGD
 endif
@@ -75,13 +89,13 @@ endif
 # Enable Busybox syslogd unless sysklogd is enabled
 ifeq ($(BR2_PACKAGE_SYSKLOGD),y)
 define SKELETON_INIT_FINIT_SET_SYSLOGD
-	ln -sf ../available/sysklogd.conf $(FINIT_D)/enabled/sysklogd.conf
-	rm -f $(FINIT_D)/enabled/syslogd.conf
+	$(finit_enable sysklogd)
+	$(finit_disable syslogd)
 endef
 else
 define SKELETON_INIT_FINIT_SET_SYSLOGD
-	ln -sf ../available/syslogd.conf $(FINIT_D)/enabled/syslogd.conf
-	rm -f $(FINIT_D)/enabled/sysklogd.conf
+	$(finit_enable syslogd)
+	$(finit_disable sysklogd)
 endef
 endif
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_SYSLOGD
@@ -89,14 +103,14 @@ SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_SYSLOGD
 # SSDP Responder
 ifeq ($(BR2_PACKAGE_SSDP_RESPONDER),y)
 define SKELETON_INIT_FINIT_SET_SSDP_RESPONDER
-	ln -sf ../available/ssdp-responder.conf $(FINIT_D)/enabled/ssdp-responder.conf
+	$(finit_enable ssdp-responder)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_SSDP_RESPONDER
 endif
 
 ifeq ($(BR2_PACKAGE_SMCROUTE),y)
 define SKELETON_INIT_FINIT_SET_SMCROUTE
-	ln -sf ../available/smcroute.conf $(FINIT_D)/enabled/smcroute.conf
+	$(finit_enable smcroute)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_SMCROUTE
 endif
@@ -104,7 +118,7 @@ endif
 # Watchdogd
 ifeq ($(BR2_PACKAGE_WATCHDOGD),y)
 define SKELETON_INIT_FINIT_SET_WATCHDOGD
-	ln -sf ../available/watchdogd.conf $(FINIT_D)/enabled/watchdogd.conf
+	$(finit_enable watchdogd)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_WATCHDOGD
 endif
@@ -112,7 +126,7 @@ endif
 # Enable gdbserver when running in Qemu mode
 ifeq ($(QEMU_GDB),y)
 define SKELETON_INIT_FINIT_SET_GDBSERVER
-	ln -sf ../available/gdbserver.conf $(FINIT_D)/enabled/gdbserver.conf
+	$(finit_enable gdbserver)
 endef
 SKELETON_INIT_FINIT_TARGET_FINALIZE_HOOKS += SKELETON_INIT_FINIT_SET_GDBSERVER
 endif
