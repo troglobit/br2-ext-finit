@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SKELETON_INIT_FINIT_VERSION = 0.4
+SKELETON_INIT_FINIT_VERSION = 0.5
 SKELETON_INIT_FINIT_SITE = $(call github,troglobit,finit-skel,v$(SKELETON_INIT_FINIT_VERSION))
 SKELETON_INIT_FINIT_ADD_TOOLCHAIN_DEPENDENCY = NO
 SKELETON_INIT_FINIT_ADD_SKELETON_DEPENDENCY = NO
