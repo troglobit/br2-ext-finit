@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-SKELETON_INIT_FINIT_VERSION = 0.3
+SKELETON_INIT_FINIT_VERSION = 0.4
 SKELETON_INIT_FINIT_SITE = $(call github,troglobit,finit-skel,v$(SKELETON_INIT_FINIT_VERSION))
 SKELETON_INIT_FINIT_ADD_TOOLCHAIN_DEPENDENCY = NO
 SKELETON_INIT_FINIT_ADD_SKELETON_DEPENDENCY = NO
@@ -50,7 +50,14 @@ define SKELETON_INIT_FINIT_SET_GENERIC_GETTY
 endef
 SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_GENERIC_GETTY
 
-# Dropbear SSH
+ifeq ($(BR2_PACKAGE_AVAHI_AUTOIPD),y)
+define SKELETON_INIT_FINIT_SET_AVAHI_AUTOIPD
+	echo "service [2345789] name:zeroconf :%i avahi-autoipd --force-bind --syslog %i -- ZeroConf for %i" \
+		> $(FINIT_D)/available/zeroconf@.conf
+endef
+SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_AVAHI_AUTOIPD
+endif
+
 ifeq ($(BR2_PACKAGE_DROPBEAR),y)
 define SKELETON_INIT_FINIT_SET_DROPBEAR
 	$(call finit_enable,dropbear)
@@ -58,7 +65,6 @@ endef
 SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_DROPBEAR
 endif
 
-# OpenSSH
 ifeq ($(BR2_PACKAGE_OPENSSH),y)
 define SKELETON_INIT_FINIT_SET_OPENSSH
 	$(call finit_enable,sshd)
@@ -101,7 +107,6 @@ endef
 endif
 SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_SYSLOGD
 
-# SSDP Responder
 ifeq ($(BR2_PACKAGE_SSDP_RESPONDER),y)
 define SKELETON_INIT_FINIT_SET_SSDP_RESPONDER
 	$(call finit_enable,ssdp-responder)
@@ -116,7 +121,6 @@ endef
 SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_SMCROUTE
 endif
 
-# Watchdogd
 ifeq ($(BR2_PACKAGE_WATCHDOGD),y)
 define SKELETON_INIT_FINIT_SET_WATCHDOGD
 	$(call finit_enable,watchdogd)
@@ -124,8 +128,7 @@ endef
 SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_WATCHDOGD
 endif
 
-# Enable gdbserver when running in Qemu mode
-ifeq ($(QEMU_GDB),y)
+ifeq ($(BR2_TOOLCHAIN_EXTERNAL_GDB_SERVER_COPY),y)
 define SKELETON_INIT_FINIT_SET_GDBSERVER
 	$(call finit_enable,gdbserver)
 endef
