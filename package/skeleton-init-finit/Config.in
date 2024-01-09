@@ -9,10 +9,59 @@ config BR2_PACKAGE_PROVIDES_SKELETON
 if BR2_PACKAGE_SKELETON_INIT_FINIT
 menu "finit init skeleton"
 
-config BR2_PACKAGE_SKELETON_INIT_FINIT_TELNETD
-	bool "/etc/inetd.conf telnetd"
+config BR2_PACKAGE_SKELETON_INIT_FINIT_ENABLE
+	bool "Enable selected services by default"
+	default y
 	help
-	  Enable telnetd from inetd service (disabled).
+	  Enable selected services in Buildroot menuconfig by default.
+
+	  Some systems use management software to decide which services
+	  to enable, on such systems you likely want to disable this
+	  setting and keep a BR2_ROOTFS_OVERLAY to enable the select few
+	  services you want to by default, e.g., syslogd.
+
+	  Please note, some services, chrony, dnsmasq, etc., require a
+	  valid configuration file, e.g. /etc/chrony.conf, to start.  If
+	  one is not provided (in an overlay by you), the service will
+	  continuously exit until Finit gives up respawning it.
+
+
+comment "BusyBox Services"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_CROND
+	bool "crond"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_DNSD
+	bool "dnsd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_HTTPD
+	bool "httpd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_NTPD
+	bool "ntpd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_INETD
+	bool "inetd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_TELNETD
+	bool "telnetd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_UDHCPD
+	bool "udhcpd"
+
+comment "Inetd services, manage /etc/inetd.conf"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_INETD_FAKEIDENTD
+	bool "fakeidentd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_INETD_FTPD
+	bool "ftpd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_INETD_TELNETD
+	bool "telnetd"
+
+config BR2_PACKAGE_SKELETON_INIT_FINIT_INETD_TFTPD
+	bool "tftpd"
 
 endmenu
 endif

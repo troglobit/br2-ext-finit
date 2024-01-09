@@ -18,6 +18,25 @@ you can even try out the latest build in Qemu yourself:
 - **Blog post:** <https://troglobit.com/post/2022-12-26-buildroot-demo-of-fastinit-finit/>
 
 
+The skeleton installs *all* known services as `available/`, even though you
+may not have selected any of them in `make menuconfig`.  When a service is
+selected it will (by default) be `enabled/`.  However, since some systems have
+management software that enable services based on system configuration, this
+behavior can be changed using menuconfig:
+
+    Symbol: BR2_PACKAGE_SKELETON_INIT_FINIT_ENABLE [=y]
+    Type  : bool
+    Prompt: Enable selected services by default
+    Location:
+      -> External options
+        -> Fast Init
+          -> Target packages
+            -> System tools
+              -> finit init skeleton
+
+Please note, some services, e.g., dsnmasq, chrony, etc. require additional
+configuration files.  These can be provided with a `BR2_ROOTFS_OVERLAY`.
+
 [1]: https://github.com/troglobit/br2-finit-demo
 [2]: https://github.com/troglobit/finit/
 [3]: https://github.com/troglobit/finit-plugins/
