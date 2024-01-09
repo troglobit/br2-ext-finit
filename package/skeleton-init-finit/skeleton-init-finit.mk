@@ -11,20 +11,8 @@ SKELETON_INIT_FINIT_ADD_SKELETON_DEPENDENCY = NO
 SKELETON_INIT_FINIT_TMPFILE := $(shell mktemp)
 SKELETON_INIT_FINIT_DEPENDENCIES = skeleton-init-common
 
-# Enable when BR2_INIT_FINT
+# Enable when BR2_INIT_FINIT
 #SKELETON_INIT_FINIT_PROVIDES = skeleton
-
-# Prefer Finit built-in getty unless options are set, squash zero baudrate
-define SKELETON_INIT_FINIT_GETTY
-	if [ -z "$(SYSTEM_GETTY_OPTIONS)" ]; then \
-		if [ $(SYSTEM_GETTY_BAUDRATE) -eq 0 ]; then \
-			SYSTEM_GETTY_BAUDRATE=""; \
-		fi; \
-		echo "tty [12345789] $(SYSTEM_GETTY_PORT) $(SYSTEM_GETTY_BAUDRATE) $(SYSTEM_GETTY_TERM) noclear"; \
-	else \
-		echo "tty [12345789] /sbin/getty -L $(SYSTEM_GETTY_OPTIONS) $(SYSTEM_GETTY_BAUDRATE) $(SYSTEM_GETTY_PORT) $(SYSTEM_GETTY_TERM)"; \
-	fi
-endef
 
 #
 # Helpers
@@ -38,9 +26,36 @@ define finit_disable
 endef
 
 #
+# Workarounds
+#
+
+# Should be in ifupdown-scripts package
+ifeq ($(BR2_PACKAGE_IFUPDOWN_SCRIPTS),y)
+define SKELETON_INIT_FINIT_IFUPDOWN_WORKAROUND
+	$(IFUPDOWN_SCRIPTS_PREAMBLE)
+	$(IFUPDOWN_SCRIPTS_LOCALHOST)
+        $(IFUPDOWN_SCRIPTS_DHCP)
+endef
+SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_IFUPDOWN_WORKAROUND
+endif
+
+#
 # Finit services to enable by default if selected in Buildroot Menuconfig
 # Note, since some services need a .conf file in /etc they are disabled.
 #
+
+# Prefer Finit built-in getty unless options are set, squash zero baudrate
+define SKELETON_INIT_FINIT_GETTY
+	if [ -z "$(SYSTEM_GETTY_OPTIONS)" ]; then \
+		if [ $(SYSTEM_GETTY_BAUDRATE) -eq 0 ]; then \
+			SYSTEM_GETTY_BAUDRATE=""; \
+		fi; \
+		echo "tty [12345789] $(SYSTEM_GETTY_PORT) $(SYSTEM_GETTY_BAUDRATE) $(SYSTEM_GETTY_TERM) noclear"; \
+	else \
+		echo "tty [12345789] /sbin/getty -L $(SYSTEM_GETTY_OPTIONS) $(SYSTEM_GETTY_BAUDRATE) $(SYSTEM_GETTY_PORT) $(SYSTEM_GETTY_TERM)"; \
+	fi
+endef
+
 define SKELETON_INIT_FINIT_SET_GENERIC_GETTY
 	$(SKELETON_INIT_FINIT_GETTY) > $(SKELETON_INIT_FINIT_TMPFILE)
 	grep -qxF "`cat $(SKELETON_INIT_FINIT_TMPFILE)`" $(FINIT_D)/available/getty.conf \
@@ -70,6 +85,13 @@ define SKELETON_INIT_FINIT_SET_OPENSSH
 	$(call finit_enable,sshd)
 endef
 SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_OPENSSH
+
+ifeq ($(BR2_TOOLCHAIN_EXTERNAL_GDB_SERVER_COPY),y)
+define SKELETON_INIT_FINIT_SET_GDBSERVER
+	$(call finit_enable,gdbserver)
+endef
+SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_GDBSERVER
+endif
 endif
 
 ifeq ($(BR2_PACKAGE_LLDPD),y)
@@ -128,23 +150,9 @@ endef
 SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_WATCHDOGD
 endif
 
-ifeq ($(BR2_TOOLCHAIN_EXTERNAL_GDB_SERVER_COPY),y)
-define SKELETON_INIT_FINIT_SET_GDBSERVER
-	$(call finit_enable,gdbserver)
-endef
-SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_SET_GDBSERVER
-endif
-
-# Workaround, should be in ifupdown-scripts package
-ifeq ($(BR2_PACKAGE_IFUPDOWN_SCRIPTS),y)
-define SKELETON_INIT_FINIT_IFUPDOWN_WORKAROUND
-	$(IFUPDOWN_SCRIPTS_PREAMBLE)
-	$(IFUPDOWN_SCRIPTS_LOCALHOST)
-        $(IFUPDOWN_SCRIPTS_DHCP)
-endef
-SKELETON_INIT_FINIT_POST_INSTALL_TARGET_HOOKS += SKELETON_INIT_FINIT_IFUPDOWN_WORKAROUND
-endif
-
+#
+# Install skeleton, with all available/ .conf files
+#
 
 ifeq ($(BR2_TARGET_GENERIC_REMOUNT_ROOTFS_RW),y)
 # Uncomment /dev/root entry in fstab to allow Finit to remount it rw
